@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="{{url_for('static',path='/css/app.css')}}" rel="stylesheet" />
+    <link
+      rel="icon"
+      href="{{url_for('static',path='/favicon.ico')}}"
+      type="image/x-icon"
+    />
+    <title>BuskerLabel</title>
+  </head>
+  <body>
+    <div class="mx-auto flex justify-center px-8 py-2">
+      <div class="text-center">
+        <h1
+          class="text-7xl font-extrabold tracking-tight text-gray-200 dark:text-slate-600"
+        >
+          <span
+            class="bg-gradient-to-r from-orange-700 to-orange-400 bg-clip-text text-transparent"
+          >
+            BuskerLabel
+          </span>
+        </h1>
+        <p
+          class="mx-auto mt-2 max-w-xl text-2xl text-gray-300 dark:text-slate-700"
+        >
+          A story every day where music meets AI
+        </p>
+      </div>
+    </div>
+
+    {% for article in articles %}
+
+    <div class="px-2 py-12 w-full flex justify-center">
+      <div
+        class="bg-white lg:mx-8 lg:flex lg:max-w-5xl lg:shadow-lg rounded-lg"
+      >
+        <div class="lg:w-1/2">
+          <div
+            class="lg:scale-110 h-80 bg-cover lg:h-full rounded-b-none border lg:rounded-lg"
+            style="
+              background-image: url('{{ article.image }}');
+            "
+          ></div>
+        </div>
+        <div
+          class="py-12 px-6 lg:px-12 max-w-xl lg:max-w-5xl lg:w-1/2 rounded-t-none border lg:rounded-lg"
+        >
+          <p class="mt-4 sm text-gray-400">{{ article.date}}</p>
+          <h2 class="text-3xl text-gray-800 font-bold">{{ article.title }}</h2>
+          <p class="mt-4 text-gray-600">{{ article.content }}</p>
+          <div class="mt-8">
+            <a
+              href="{{ article.url }}"
+              target="_blank"
+              class="bg-gray-900 text-gray-100 px-5 py-3 font-semibold rounded"
+              >Read more</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% endfor %}
+  </body>
+</html>
