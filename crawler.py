@@ -1,5 +1,6 @@
 import asyncio
 import re
+import os
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 
@@ -241,8 +242,9 @@ async def main():
         )
         await crawler.run()
 
-    # Write the collected data to a CSV file
-    with open("fetched.csv", "a") as output:
+    # Write the collected data to a CSV file  
+    output_dir = os.getenv("CRAWLEE_STORAGE_DIR")    
+    with open(f"{output_dir}/fetched.csv", "a") as output:
         await store.write_to(content_type="csv", destination=output)
 
 if __name__ == '__main__':

@@ -11,5 +11,9 @@
       "src": "/(.*)",
       "dest": "web.py"
     }
-  ]
+  ],
+
+  "env": {
+    "CRAWLEE_STORAGE_DIR": "/tmp"
+  }
 }
