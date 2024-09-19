@@ -11,5 +11,10 @@
       "src": "/(.*)",
       "dest": "web.py"
     }
-  ]  
+  ],
+  "functions": {
+    "/**": {
+      "maxDuration": 60
+    }
+  }
 }
