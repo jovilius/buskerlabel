@@ -8,6 +8,7 @@ from crawlee import EnqueueStrategy, Glob
 from crawlee.beautifulsoup_crawler import BeautifulSoupCrawler, BeautifulSoupCrawlingContext
 from crawlee.storages import RequestQueue
 from crawlee.storages._dataset import Dataset
+from crawlee.configuration import Configuration
 from dateutil.parser import parse
 
 def extract_dates_from_url(url):
@@ -226,6 +227,14 @@ async def main():
         },
     ]
 
+    # Get the global configuration
+    config = Configuration.get_global_configuration()
+
+    # Disable storage and metadata writing 
+    # (because on Vercel we don't have write access)
+    config.persist_storage = False   
+    config.write_metadata = False 
+    
     store = await Dataset.open()
 
     for source in sources:
@@ -243,9 +252,9 @@ async def main():
         await crawler.run()
 
     # Write the collected data to a CSV file  
-    output_dir = os.getenv("CRAWLEE_STORAGE_DIR")    
-    with open(f"{output_dir}/fetched.csv", "a") as output:
-        await store.write_to(content_type="csv", destination=output)
+    # output_dir = os.getenv("CRAWLEE_STORAGE_DIR")    
+    # with open(f"{output_dir}/fetched.csv", "a") as output:
+        # await store.write_to(content_type="csv", destination=output)
 
 if __name__ == '__main__':
     asyncio.run(main())
