@@ -1,8 +1,10 @@
+import asyncio
 from typing import Union
 
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+import crawler
 
 app = FastAPI()
 
@@ -59,3 +61,8 @@ def read_root(request: Request):
         "index.html", 
         {"request": request, "articles": articles}
     )
+
+@app.put("/crawl")
+async def crawl():     
+    await crawler.main()
+    return {"message": "Crawling completed."}
