@@ -63,15 +63,9 @@ def read_root(request: Request):
         {"request": request, "articles": articles}
     )
 
-
 @app.get("/info")
-def read_info(request: Request):
-    # list all the env variables
-    vars = sorted(os.environ.items())    
-    vars = "\n".join([f"{key}: {value}" for key, value in vars])
-
-
-    return vars
+def read_info(request: Request):   
+    return "This is buskerlabel.com"
 
 @app.put("/crawl")
 async def crawl(request: Request):     
