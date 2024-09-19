@@ -175,7 +175,6 @@ async def init_crawler(request_queue, include_url_glob, max_requests_per_crawl, 
             context (BeautifulSoupCrawlingContext): The crawling context.
         """
         url = context.request.url
-        context.log.info(f'Fetching: {url}')
 
         # Extract data from the page
         title = context.soup.title.string if context.soup.title else None
@@ -238,8 +237,11 @@ async def main():
     store = await Dataset.open()
 
     for source in sources:
+        source_name = source['name']
+        print(f'Crawling: {source_name} ...')
+
         # Initialize request queue and add the base URL
-        rq = await RequestQueue.open(name=source['name'])
+        rq = await RequestQueue.open(name=source_name)
         await rq.add_request(source['base_url'])
 
         # Initialize and run the crawler for the source
