@@ -1,5 +1,6 @@
 import asyncio
 from typing import Union
+import os
 
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
@@ -62,7 +63,18 @@ def read_root(request: Request):
         {"request": request, "articles": articles}
     )
 
+
+@app.get("/info")
+def read_info(request: Request):
+    # list all the env variables
+    vars = sorted(os.environ.items())    
+    vars = "\n".join([f"{key}: {value}" for key, value in vars])
+
+
+    return vars
+
 @app.put("/crawl")
-async def crawl():     
+async def crawl(request: Request):     
     await crawler.main()
     return {"message": "Crawling completed."}
+
