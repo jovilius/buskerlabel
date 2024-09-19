@@ -246,7 +246,7 @@ async def main():
         crawler = await init_crawler(
             rq,
             source['include_url_glob'],
-            64,
+            16,
             store,
         )
         await crawler.run()
