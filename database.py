@@ -3,6 +3,20 @@ from psycopg2 import sql
 
 import os
 
+def get_connection():
+    # Define your PostgreSQL connection parameters
+    conn_params = {
+        "dbname": os.getenv("POSTGRES_DATABASE").strip("\""),
+        "user": os.getenv("POSTGRES_USER").strip("\""),
+        "password": os.getenv("POSTGRES_PASSWORD").strip("\""),
+        "host": os.getenv("POSTGRES_HOST").strip("\""),
+        "port": "5432"
+    }
+
+    # Connect to the PostgreSQL database
+    connection = psycopg2.connect(**conn_params)
+    return connection
+
 # Function to create a table if it does not exist
 def create_table_if_not_exists(connection, table_name, columns):
     with connection.cursor() as cursor:
@@ -24,9 +38,10 @@ def create_table_if_not_exists(connection, table_name, columns):
         connection.commit()
 
 # Function to insert data into the table
-def insert(connection, table_name, columns, data_iterator):
-    # Exclude the 'id' column since it's auto-incremented
-    columns = [col for col in columns if col != 'id']
+def insert(table_name, entity, data_iterator, auto_increment=True):
+    connection = get_connection()
+    skip_id= 1 if auto_increment else 0
+    columns = entity.__init__.__code__.co_varnames[1 + skip_id:]
     with connection.cursor() as cursor:
         # Prepare the INSERT query dynamically
         insert_query = sql.SQL(
@@ -43,52 +58,27 @@ def insert(connection, table_name, columns, data_iterator):
         for row in data_iterator:
             cursor.execute(insert_query, row)
         connection.commit()
+    connection.close()
 
-# Sample usage
-def main():
-    # Define your PostgreSQL connection parameters
-    conn_params = {
-        "dbname": os.getenv("POSTGRES_DATABASE").strip("\""),
-        "user": os.getenv("POSTGRES_USER").strip("\""),
-        "password": os.getenv("POSTGRES_PASSWORD").strip("\""),
-        "host": os.getenv("POSTGRES_HOST").strip("\""),
-        "port": "5432"
-    }
-
-    print("Connecting to the PostgreSQL database...")
-
-    # Connect to the PostgreSQL database
-    connection = psycopg2.connect(**conn_params)
-
-    # Define table name and columns
-    table_name = 'test_table'
-    columns = {
-        'id': 'SERIAL PRIMARY KEY',
-        'name': 'VARCHAR(100)',
-        'age': 'INT',
-        'email': 'VARCHAR(100)'
-    }
-
-    # Sample data iterator (e.g., can be a generator or list of tuples)
-    data_iterator = [
-        ('Alice', 30, 'alice@example.com'),
-        ('Bob', 25, 'bob@example.com'),
-        ('Charlie', 35, 'charlie@example.com')
-    ]
-
-    try:
-        # Create table if it doesn't exist
-        create_table_if_not_exists(connection, table_name, columns)
-
-        # Insert data from iterator
-        insert(connection, table_name, columns.keys(), data_iterator)
-        print("Data inserted successfully.")
+def select(table_name, entity):   
+    items = []
+    connection = get_connection()
+    columns = entity.__init__.__code__.co_varnames[1:]
+    with connection.cursor() as cursor:
+        # Prepare the SELECT query dynamically
+        select_query = sql.SQL(
+            """
+            SELECT {fields}
+            FROM {table}
+            """
+        ).format(
+            fields=sql.SQL(', ').join(map(sql.Identifier, columns)),
+            table=sql.Identifier(table_name)
+        )
+        cursor.execute(select_query)
+        rows = cursor.fetchall()
+        items = [dict(zip(columns, values)) for values in rows]        
+    connection.close()
+    return items
     
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    
-    finally:
-        connection.close()
 
-if __name__ == "__main__":
-    main()
