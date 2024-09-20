@@ -27,12 +27,12 @@
         <p
           class="mx-auto mt-2 max-w-xl text-2xl text-gray-300 dark:text-slate-700"
         >
-          Stories Where Music Embraces AI
+          Stories Where Music Meets AI
         </p>
       </div>
     </div>
 
-    {% for article in articles %}
+    {% for story in stories %}
 
     <div class="px-2 py-12 w-full flex justify-center">
       <div
@@ -42,19 +42,19 @@
           <div
             class="lg:scale-110 h-80 bg-cover lg:h-full rounded-b-none border lg:rounded-lg"
             style="
-              background-image: url('{{ article.image }}');
+              background-image: url('{{ story.image_url }}');
             "
           ></div>
         </div>
         <div
           class="py-12 px-6 lg:px-12 max-w-xl lg:max-w-5xl lg:w-1/2 rounded-t-none border lg:rounded-lg"
         >
-          <p class="mt-4 sm text-gray-400">{{ article.date}}</p>
-          <h2 class="text-3xl text-gray-800 font-bold">{{ article.title }}</h2>
-          <p class="mt-4 text-gray-600">{{ article.content }}</p>
+          <p class="mt-4 sm text-gray-400">{{ story.publised_at}}</p>
+          <h2 class="text-3xl text-gray-800 font-bold">{{ story.title }}</h2>
+          <p class="mt-4 text-gray-600">{{ story.summary }}</p>
           <div class="mt-8">
             <a
-              href="{{ article.url }}"
+              href="{{ story.url }}"
               target="_blank"
               class="bg-gray-900 text-gray-100 px-5 py-3 font-semibold rounded"
               >Read more</a
