@@ -49,7 +49,9 @@
         <div
           class="py-12 px-6 lg:px-12 max-w-xl lg:max-w-5xl lg:w-1/2 rounded-t-none border lg:rounded-lg"
         >
-          <p class="mt-4 sm text-gray-400">{{ story.publised_at}}</p>
+          <p class="mt-4 sm text-gray-400">
+            {{ story.published_at.strftime("%d %b %Y")}}
+          </p>
           <h2 class="text-3xl text-gray-800 font-bold">{{ story.title }}</h2>
           <p class="mt-4 text-gray-600">{{ story.summary }}</p>
           <div class="mt-8">
