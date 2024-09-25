@@ -108,7 +108,7 @@ def check_is_article(soup):
     """
     return get_og_tag(soup, 'type') == 'article'
 
-def check_is_recent(published_at, days=14):
+def check_is_recent(published_at, days):
     """
     Determine if the article was published within a certain number of days.
 
@@ -150,6 +150,7 @@ async def init_crawler(
         request_queue, 
         include_url_glob, 
         max_requests_per_crawl, 
+        max_days_old,
         store
 ):
     """
@@ -178,6 +179,7 @@ async def init_crawler(
             context (BeautifulSoupCrawlingContext): The crawling context.
         """
         url = context.request.url
+        print(f'Crawling: {url}')
 
         # Extract data from the page
         title = context.soup.title.string if context.soup.title else None
@@ -185,7 +187,7 @@ async def init_crawler(
         published_at = get_published_time(context.soup, url)
         og_image = get_og_image_url(context.soup)
         is_article = check_is_article(context.soup)
-        is_recent = check_is_recent(published_at)
+        is_recent = check_is_recent(published_at, max_days_old)
 
         # Enqueue new links from the same domain that match the glob pattern
         await context.enqueue_links(
@@ -221,12 +223,12 @@ async def main():
             'name': 'hypebot',
             'base_url': 'https://www.hypebot.com/hypebot/category/music-tech',
             'include_url_glob': 'https://www.hypebot.com/**/????/??/**',
-        },
-        {
-            'name': 'fortune',
-            'base_url': 'https://fortune.com/section/tech',
-            'include_url_glob': 'https://fortune.com/**/????/??/??/**',
-        },
+        }
+        #{
+        #    'name': 'fortune',
+        #    'base_url': 'https://fortune.com/section/tech',
+        #    'include_url_glob': 'https://fortune.com/**/????/??/??/**',
+        #},
     ]
 
     # Get the global configuration
@@ -249,10 +251,11 @@ async def main():
 
         # Initialize and run the crawler for the source
         crawler = await init_crawler(
-            rq,
-            source['include_url_glob'],
-            8,
-            store,
+            request_queue = rq, 
+            include_url_glob = source['include_url_glob'], 
+            max_requests_per_crawl = 64, 
+            max_days_old = 60,
+            store = store
         )
         await crawler.run()
 
