@@ -38,8 +38,6 @@ mdurl==0.1.2
 more-itertools==10.5.0
 playwright==1.47.0
 psutil==6.0.0
-psycopg2==2.9.9
-psycopg2-binary==2.9.9
 pycparser==2.22
 pydantic==2.9.1
 pydantic-settings==2.5.2
