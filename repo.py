@@ -1,4 +1,3 @@
-
 from sqlalchemy import Column, Integer, String, TIMESTAMP
 from sqlalchemy.orm import Session
 from db import Base, get_db, engine
