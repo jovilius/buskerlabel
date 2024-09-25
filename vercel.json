@@ -11,11 +11,5 @@
       "src": "/(.*)",
       "dest": "web.py"
     }
-  ],
-  "crons": [
-    {
-      "path": "/crawl",
-      "schedule": "40 13 * * *"
-    }
   ]
 }
