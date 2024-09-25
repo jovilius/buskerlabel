@@ -26,8 +26,7 @@ fastapi-cli==0.0.5
 filelock==3.16.1
 greenlet==3.0.3
 h11==0.14.0
-haystack-ai==2.5.1
-haystack-experimental==0.2.0
+haystack-ai==2.5.1ß
 html5lib==1.1
 httpcore==1.0.5
 httptools==0.6.1
@@ -47,7 +46,7 @@ networkx==3.3
 numpy==1.26.4
 openai==1.47.1
 pandas==2.2.3
-playwright==1.47.0
+# playwright==1.47.0
 posthog==3.6.6
 psutil==6.0.0
 psycopg2-binary==2.9.9
