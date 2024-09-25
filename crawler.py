@@ -1,6 +1,4 @@
-import asyncio
-import re
-import os
+import asyncio, re, io, json
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 
@@ -148,7 +146,12 @@ def get_content(soup):
         return content_element.get_text(strip=True)
     return None
 
-async def init_crawler(request_queue, include_url_glob, max_requests_per_crawl, store):
+async def init_crawler(
+        request_queue, 
+        include_url_glob, 
+        max_requests_per_crawl, 
+        store
+):
     """
     Initialize and configure the BeautifulSoupCrawler.
 
@@ -197,7 +200,7 @@ async def init_crawler(request_queue, include_url_glob, max_requests_per_crawl, 
                 'published_at': published_at.isoformat() if published_at else None,
                 'url': url,
                 'title': title,
-                'og_image': og_image,
+                'image_url': og_image,
                 'content': content,
             }
             await store.push_data(data)
@@ -248,15 +251,18 @@ async def main():
         crawler = await init_crawler(
             rq,
             source['include_url_glob'],
-            16,
+            8,
             store,
         )
         await crawler.run()
 
-    # Write the collected data to a CSV file  
-    # output_dir = os.getenv("CRAWLEE_STORAGE_DIR")    
-    # with open(f"{output_dir}/fetched.csv", "a") as output:
-        # await store.write_to(content_type="csv", destination=output)
+    fetched_stories_io = io.StringIO()
+    await store.write_to(content_type="json", destination=fetched_stories_io)
+
+    fetched_stories_io.seek(0)
+    fetched_stories = json.loads(fetched_stories_io.getvalue())
+    fetched_stories_io.close()
+    return fetched_stories
 
 if __name__ == '__main__':
     asyncio.run(main())

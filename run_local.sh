@@ -6,4 +6,3 @@ done < .secrets
 
 # Run the web app on localhost
 uvicorn web:app
-

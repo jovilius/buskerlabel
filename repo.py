@@ -1,130 +1,103 @@
-import database
 
-# gnerate a list of articles with id, title, content, date and image url
-class FetchedStory:
-    def __init__(self, id: int, published_at: str, fetched_at: str, url: str, title: str, content: str, image_url: str):
-        self.id = id
-        self.published_at = published_at
-        self.fetched_at = fetched_at
-        self.url = url
-        self.title = title
-        self.content = content        
-        self.image_url = image_url
-        
-class ShortlistedStory:
-    def __init__(self, id: int, published_at: str, url: str, title: str, summary: str, image_url: str): 
-        self.id = id
-        self.published_at = published_at
-        self.url = url
-        self.title = title
-        self.summary = summary
-        self.image_url = image_url
+from sqlalchemy import Column, Integer, String, TIMESTAMP
+from sqlalchemy.orm import Session
+from db import Base, get_db, engine
 
-def initialize():
+class FetchedStory(Base):
+    __tablename__ = "fetched_stories"  
 
-    print("Initializing the database...")
-    connection = database.get_connection()
+    id = Column(Integer, primary_key=True, nullable=False)
+    published_at = Column(TIMESTAMP, nullable=False)
+    fetched_at = Column(TIMESTAMP, nullable=False)
+    url = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    content = Column(String, nullable=False)        
+    image_url = Column(String, nullable=False)
 
-    # Create the 'fetched_stories' table
-    database.create_table_if_not_exists(
-        connection,
-        "fetched_stories",
-        {
-            "id": "SERIAL PRIMARY KEY",
-            "published_at": "TIMESTAMP NOT NULL",
-            "fetched_at": "TIMESTAMP NOT NULL",
-            "url": "VARCHAR(256) NOT NULL",
-            "title": "TEXT NOT NULL",
-            "content": "TEXT NOT NULL",
-            "image_url": "VARCHAR(256) NOT NULL"
-        }
-    )    
+def add_fetched_story(db: Session, story: FetchedStory):    
+    db.add(story)
+    db.commit()
 
-    # Create the 'shortlisted_stories' table
-    database.create_table_if_not_exists(  
-        connection,      
-        "shortlisted_stories",
-        {
-            "id": "INT PRIMARY KEY",  
-            "published_at": "TIMESTAMP NOT NULL",
-            "url": "VARCHAR(256) NOT NULL",  
-            "title": "TEXT NOT NULL",
-            "summary": "TEXT NOT NULL",
-            "image_url": "VARCHAR(256) NOT NULL"            
-        }
-    )
-    print("Database initialized.")
+def find_fetched_stories(db: Session):
+    return db.query(FetchedStory).all() 
 
-def add_fetched_stories(story):    
-    database.insert(        
-        "fetched_stories",
-        FetchedStory,
-        story,
-        auto_increment=True
-    )    
+def exists_fetched_story(db: Session, url: str) -> bool:
+    return db.query(FetchedStory).filter(FetchedStory.url == url).first() is not None      
 
-def find_fetched_stories():
-    fetched_stories = database.select(        
-        "fetched_stories", 
-        FetchedStory,
-    )
-    return fetched_stories
+class ShortlistedStory(Base):   
+    __tablename__ = "shortlisted_stories"  
 
-def add_shortlisted_story(story):
-    database.insert(        
-        "shortlisted_stories",
-        ShortlistedStory,
-        story,
-        auto_increment=False
-    )
+    id = Column(Integer, primary_key=True, nullable=False)
+    published_at = Column(TIMESTAMP, nullable=False)
+    url = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    summary = Column(String, nullable=False)
+    image_url = Column(String, nullable=False)       
 
-def find_shortlisted_stories():
-    shortlisted_stories = database.select(        
-        "shortlisted_stories", 
-        ShortlistedStory
-    )
-    return shortlisted_stories
+def add_shortlisted_story(db: Session, story: ShortlistedStory):
+    db.add(story)
+    db.commit()
+   
+def find_shortlisted_stories(db: Session):    
+    return db.query(ShortlistedStory) \
+            .order_by(ShortlistedStory.published_at.desc()) \
+            .all()  
 
-def add_demo_stories():
+def add_demo_stories(db: Session):
     fetched_stories = [
-        (
-            "2024-09-09 12:00:00",
-            "2024-09-09 12:00:00",
-            "https://www.google.com",
-            "GoogleMX - The AI powerd music creation tool",
-            "GogoMX is a music creation tool that uses AI to help you create music. It is a great tool for musicians and music producers.",
-            "https://media.istockphoto.com/id/1085717468/es/foto/seminario-de-rob%C3%B3tica-en-el-%C3%A1mbito.jpg?s=1024x1024&w=is&k=20&c=30qW68ySJFiW4D4eNXoRkhKMRntiFlfkqikrVB0ByuU="
+        FetchedStory(
+            id = 1,
+            published_at = "2024-09-09 12:00:00",
+            fetched_at = "2024-09-09 12:00:00",
+            url = "https://www.google.com",
+            title = "GoogleMX - The AI powerd music creation tool",
+            content = "GogoMX is a music creation tool that uses AI to help you create music. It is a great tool for musicians and music producers.",
+            image_url = "https://media.istockphoto.com/id/1085717468/es/foto/seminario-de-rob%C3%B3tica-en-el-%C3%A1mbito.jpg?s=1024x1024&w=is&k=20&c=30qW68ySJFiW4D4eNXoRkhKMRntiFlfkqikrVB0ByuU="
         ),
-        (
-            "2024-09-08 12:00:00",
-            "2024-09-08 12:00:00",
-            "https://www.google.com",
-            "BandLab - The free music creation tool",
-            "BandLab is a free music creation tool that allows you to create music online. It is a great tool for musicians and music producers.",
-            "https://media.istockphoto.com/id/1495811235/es/foto/concepto-de-m%C3%BAsica-generado-por-ia-icono-de-notas-en-la-mano-humanoide-robot-sobre-fondo-azul.jpg?s=1024x1024&w=is&k=20&c=9-GHR5JAHb_wWrpPTljaDldD2a44AUoZHnjCbwq24Y4="
+        FetchedStory(
+            id = 2,
+            published_at = "2024-09-08 12:00:00",
+            fetched_at = "2024-09-08 12:00:00",
+            url = "https://www.google.com",
+            title = "BandLab - The free music creation tool",
+            content = "BandLab is a free music creation tool that allows you to create music online. It is a great tool for musicians and music producers.",
+            image_url = "https://media.istockphoto.com/id/1495811235/es/foto/concepto-de-m%C3%BAsica-generado-por-ia-icono-de-notas-en-la-mano-humanoide-robot-sobre-fondo-azul.jpg?s=1024x1024&w=is&k=20&c=9-GHR5JAHb_wWrpPTljaDldD2a44AUoZHnjCbwq24Y4="
         )
     ]
-    add_fetched_stories(fetched_stories)
+    for story in fetched_stories:
+        add_fetched_story(db, story)
 
-    shortlisted_story = [
-        (
-            1,
-            "2024-09-09 12:00:00",
-            "https://www.google.com",
-            "GoogleMX - The AI powerd music creation tool",
-            "Exciting tool!",
-            "https://media.istockphoto.com/id/1085717468/es/foto/seminario-de-rob%C3%B3tica-en-el-%C3%A1mbito.jpg?s=1024x1024&w=is&k=20&c=30qW68ySJFiW4D4eNXoRkhKMRntiFlfkqikrVB0ByuU="
+    shortlisted_stories = [
+        ShortlistedStory(
+            id = 1,
+            published_at = "2024-09-09 12:00:00",
+            url = "https://www.google.com",
+            title = "GoogleMX - The AI powerd music creation tool",
+            summary = "GogoMX is a music creation tool that uses AI to help you create music. It is a great tool for musicians and music producers.",
+            image_url = "https://media.istockphoto.com/id/1085717468/es/foto/seminario-de-rob%C3%B3tica-en-el-%C3%A1mbito.jpg?s=1024x1024&w=is&k=20&c=30qW68ySJFiW4D4eNXoRkhKMRntiFlfkqikrVB0ByuU="
         ),
-        (
-            2,
-            "2024-09-08 12:00:00",
-            "https://www.google.com",
-            "BandLab - The free music creation tool",
-            "Amazing tool!",
-            "https://media.istockphoto.com/id/1495811235/es/foto/concepto-de-m%C3%BAsica-generado-por-ia-icono-de-notas-en-la-mano-humanoide-robot-sobre-fondo-azul.jpg?s=1024x1024&w=is&k=20&c=9-GHR5JAHb_wWrpPTljaDldD2a44AUoZHnjCbwq24Y4="
-        )   
-    ]
-    add_shortlisted_story(shortlisted_story)
+        ShortlistedStory(
+            id = 2,
+            published_at = "2024-09-08 12:00:00",
+            url = "https://www.google.com",
+            title = "BandLab - The free music creation tool",
+            summary = "BandLab is a free music creation tool that allows you to create music online. It is a great tool for musicians and music producers.",
+            image_url = "https://media.istockphoto.com/id/1495811235/es/foto/concepto-de-m%C3%BAsica-generado-por-ia-icono-de-notas-en-la-mano-humanoide-robot-sobre-fondo-azul.jpg?s=1024x1024&w=is&k=20&c=9-GHR5JAHb_wWrpPTljaDldD2a44AUoZHnjCbwq24Y4="
+        )
+    ]   
 
+    for story in shortlisted_stories:
+        add_shortlisted_story(db, story)
+
+def inizialize_db():
+    print("Initializing the database...")
+    Base.metadata.create_all(bind=engine)
+    print("Database initialized.")
+
+if __name__ == '__main__':
+    inizialize_db()
+    db_ = next(get_db())
+    print("Adding demo stories...")
+    add_demo_stories(db_,)
+    db_.close()
     print("Demo stories added.")
-        
