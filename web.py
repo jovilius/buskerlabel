@@ -27,7 +27,7 @@ def read_root(request: Request, db: Session = Depends(get_db)):
 def read_info(request: Request):   
     return "This is buskerlabel.com"
 
-@app.put("/crawl")
+@app.get("/crawl")
 async def crawl(request: Request, db: Session = Depends(get_db)):     
     print("Crawling...")
     fetched_stories = await crawler.main()
