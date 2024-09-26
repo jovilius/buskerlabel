@@ -144,6 +144,10 @@ def get_content(soup):
     content_element = soup.find(id='article-content')
     if content_element:
         return content_element.get_text(strip=True)
+    # Fallback to the main <div> with class 'entry-content'
+    entry_content = soup.find('div', class_='entry-content')
+    if entry_content:
+        return entry_content.get_text(strip=True)
     return None
 
 async def init_crawler(
@@ -223,12 +227,12 @@ async def main():
             'name': 'hypebot',
             'base_url': 'https://www.hypebot.com/hypebot/category/music-tech',
             'include_url_glob': 'https://www.hypebot.com/**/????/??/**',
+        },
+        {
+            'name': 'techcrunch',
+            'base_url': 'https://techcrunch.com/?s=ai+music',
+            'include_url_glob': 'https://techcrunch.com/????/??/??/**',
         }
-        #{
-        #    'name': 'fortune',
-        #    'base_url': 'https://fortune.com/section/tech',
-        #    'include_url_glob': 'https://fortune.com/**/????/??/??/**',
-        #},
     ]
 
     # Get the global configuration
