@@ -1,13 +1,13 @@
 name: Crawl
 
 on:
- schedule:
+  schedule:
     - cron: "*/3 * * * *"
- workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   invoke:
     runs-on: ubuntu-latest
     steps:
       - name: Crawl
-        run: curl -X GET "https://buskerlabel.com/crawl"
+        run: curl -X GET "https://www.buskerlabel.com/crawl"
