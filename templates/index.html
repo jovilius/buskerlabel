@@ -35,20 +35,16 @@
     {% for story in stories %}
 
     <div class="px-2 py-12 w-full flex justify-center">
-      <div
-        class="bg-white lg:mx-8 lg:flex lg:max-w-5xl lg:shadow-lg rounded-lg"
-      >
-        <div class="lg:w-1/2">
+      <div class="bg-white rounded-lg">
+        <div class="">
           <div
-            class="lg:scale-110 h-80 bg-cover lg:h-full rounded-b-none border lg:rounded-lg"
+            class="h-80 bg-cover rounded-b-none border"
             style="
               background-image: url('{{ story.image_url }}');
             "
           ></div>
         </div>
-        <div
-          class="py-12 px-6 lg:px-12 max-w-xl lg:max-w-5xl lg:w-1/2 rounded-t-none border lg:rounded-lg"
-        >
+        <div class="py-12 px-6 lg:px-12 max-w-xl rounded-t-none border">
           <p class="mt-4 sm text-gray-400">
             {{ story.published_at.strftime("%d %b %Y")}}
           </p>
