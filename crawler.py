@@ -150,6 +150,19 @@ def get_content(soup):
         return entry_content.get_text(strip=True)
     return None
 
+def get_title(soup):
+    """
+    Extract the title of the article.
+
+    Args:
+        soup (BeautifulSoup): The BeautifulSoup object of the page.
+
+    Returns:
+        str or None: The title of the article, or None if not found.
+    """
+    title = soup.title
+    return title.string.split('|')[0].strip() if title else None
+
 async def init_crawler(
         request_queue,         
         max_requests_per_crawl, 
@@ -188,7 +201,7 @@ async def init_crawler(
         context.log.info(f'Crawling: {url}')
 
         # Extract data from the page
-        title = context.soup.title.string if context.soup.title else None
+        title = get_title(context.soup)
         content = get_content(context.soup)
         published_at = get_published_time(context.soup, url)
         og_image = get_og_image_url(context.soup)
