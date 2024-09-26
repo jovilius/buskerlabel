@@ -196,7 +196,7 @@ async def init_crawler(
         )
 
         # Store data if it's a recent article
-        if is_article and is_recent:
+        if is_article and is_recent and title and content and og_image:
             data = {
                 'fetched_at': datetime.now(timezone.utc).isoformat(),
                 'published_at': published_at.isoformat() if published_at else None,
