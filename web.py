@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from fastapi import FastAPI, Request, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import StreamingResponse
 import crawler
 import summarizer
 
@@ -33,37 +34,35 @@ def read_info(request: Request):
     return "This is buskerlabel.com"
 
 @app.get("/crawl")
-async def crawl(request: Request, db: Session = Depends(get_db)):     
-    print("Crawling...")
-    fetched_stories = await crawler.main()
-    print(f"Fetched {len(fetched_stories)} stories.")
-    print("Saving to database...")
-    added = 0
-    for fetched_story in fetched_stories:
-        fetched_story = FetchedStory(**fetched_story)
-        if not repo.exists_fetched_story(db, fetched_story.url):
-            print(f"Adding story: {fetched_story.url}")
-            repo.add_fetched_story(db, fetched_story)
-            added += 1
-        else:
-            print(f"Story already exists: {fetched_story.url}")
-    print(f"Saved {added} stories to database.")
-    return {"message": "Crawling completed."}
+async def crawl(request: Request, db: Session = Depends(get_db)):  
+    async def generate():   
+        yield "Fetching ... \n"
+        already_fetched_urls = [story.url for story in repo.find_fetched_stories(db)]
+        fetched_stories = await crawler.crawl(set(already_fetched_urls))
+        yield f"Fetched {len(fetched_stories)} stories.\n"
+        yield "Adding new stories to database...\n"
+        added = 0
+        for fetched_story in fetched_stories:
+            fetched_story = FetchedStory(**fetched_story)
+            if not repo.exists_fetched_story(db, fetched_story.url):
+                yield f"Adding story: {fetched_story.url} ...\n"
+                repo.add_fetched_story(db, fetched_story)
+                added += 1            
+        yield f"Added {added} new stories to database.\n"
+    return StreamingResponse(generate())
 
 @app.get("/shortlist")
 async def shortlist(request: Request, db: Session = Depends(get_db)):
-    fetched_stories = repo.find_fetched_stories(db)
-    print(f"Processing {len(fetched_stories)} stories...")
-
-    for fetched_story in fetched_stories:
-        if not repo.exists_processed_story(db, fetched_story.url):
-            print(f"Analyzing: {fetched_story.url} ...")
-            print(f"Original content: {fetched_story.content}")
+    async def generate():
+        fetched_stories = repo.find_unprocessed_fetched_stories(db)
+        yield f"Analyzing {len(fetched_stories)} stories ...\n"
+        for fetched_story in fetched_stories:
+            yield f"Analyzing: {fetched_story.url} ...\n"
+            yield f"Original content: {fetched_story.content}\n---\n"
             result = summarizer.filter_and_summarize_ai_music(
                 fetched_story.content
             )
             on_topic = result['check'].lower() == "yes"
-            
             if on_topic:
                 summary = result['summary']
                 story = {
@@ -75,15 +74,10 @@ async def shortlist(request: Request, db: Session = Depends(get_db)):
                 }
                 shortlisted_story = ShortlistedStory(**story)
                 repo.add_shortlisted_story(db, shortlisted_story)
-                print(f"Shortlisted: {shortlisted_story.summary}") 
+                yield f"Shortlisted: {shortlisted_story.summary}\n"
             else:
-                print("Off-topic.")
-
+                yield "Off-topic.\n---\n"
             repo.add_processed_story(db, repo.ProcessedStory(url=fetched_story.url, type="filter:ai,music;summary"))   
-        else:
-            print(f"Skipped: {fetched_story.url}")
-        
-    print("Processing completed.")
- 
-    return {"message": "Shortlisting completed."}
+        yield "Analyzing completed.\n"
+    return StreamingResponse(generate())
 

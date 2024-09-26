@@ -23,6 +23,13 @@ def find_fetched_stories(db: Session):
 def exists_fetched_story(db: Session, url: str) -> bool:
     return db.query(FetchedStory).filter(FetchedStory.url == url).first() is not None      
 
+def find_unprocessed_fetched_stories(db: Session):
+    return db.query(FetchedStory) \
+        .filter(~FetchedStory.url.in_(
+            db.query(ProcessedStory.url)
+        )) \
+        .all()
+
 class ProcessedStory(Base):
     __tablename__ = "processed_stories"  
 

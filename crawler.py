@@ -151,11 +151,11 @@ def get_content(soup):
     return None
 
 async def init_crawler(
-        request_queue, 
-        include_url_glob, 
+        request_queue,         
         max_requests_per_crawl, 
         max_days_old,
-        store
+        store,
+        already_crawled_urls : set[str]
 ):
     """
     Initialize and configure the BeautifulSoupCrawler.
@@ -174,6 +174,8 @@ async def init_crawler(
         max_requests_per_crawl=max_requests_per_crawl,
     )
 
+    exclude_urls = [Glob(url) for url in already_crawled_urls]
+
     @crawler.router.default_handler
     async def request_handler(context: BeautifulSoupCrawlingContext):
         """
@@ -183,7 +185,7 @@ async def init_crawler(
             context (BeautifulSoupCrawlingContext): The crawling context.
         """
         url = context.request.url
-        print(f'Crawling: {url}')
+        context.log.info(f'Crawling: {url}')
 
         # Extract data from the page
         title = context.soup.title.string if context.soup.title else None
@@ -191,12 +193,13 @@ async def init_crawler(
         published_at = get_published_time(context.soup, url)
         og_image = get_og_image_url(context.soup)
         is_article = check_is_article(context.soup)
-        is_recent = check_is_recent(published_at, max_days_old)
+        is_recent = check_is_recent(published_at, max_days_old) 
 
         # Enqueue new links from the same domain that match the glob pattern
         await context.enqueue_links(
             strategy=EnqueueStrategy.SAME_DOMAIN,
-            include=[Glob(include_url_glob)],
+            # include=[Glob(include_url_glob)],                        
+            exclude=exclude_urls
         )
 
         # Store data if it's a recent article
@@ -213,8 +216,9 @@ async def init_crawler(
 
     return crawler
 
-async def main():
-    """
+
+async def crawl(already_crawled_urls: set[str]):
+    """ 
     Set up and run the crawlers for multiple sources, then export the data.
     """
     sources = [
@@ -234,6 +238,11 @@ async def main():
             'include_url_glob': 'https://techcrunch.com/????/??/??/**',
         }
     ]
+
+    #print('Already crawled URLs:')
+    #for url in already_crawled_urls:
+    #    print(url)
+    #print()
 
     # Get the global configuration
     config = Configuration.get_global_configuration()
@@ -255,11 +264,11 @@ async def main():
 
         # Initialize and run the crawler for the source
         crawler = await init_crawler(
-            request_queue = rq, 
-            include_url_glob = source['include_url_glob'], 
+            request_queue = rq,              
             max_requests_per_crawl = 64, 
-            max_days_old = 60,
-            store = store
+            max_days_old = 120,
+            store = store,
+            already_crawled_urls = already_crawled_urls
         )
         await crawler.run()
 
@@ -272,4 +281,4 @@ async def main():
     return fetched_stories
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    asyncio.run(crawl())
