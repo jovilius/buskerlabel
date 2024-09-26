@@ -1,0 +1,12 @@
+name: Shortlist News
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+
+jobs:
+  invoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Crawl News
+        run: curl -X GET "https://buskerlabel.com/shortlist"

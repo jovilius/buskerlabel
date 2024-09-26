@@ -1,0 +1,12 @@
+name: Crawl News
+
+on:
+  schedule:
+    - cron: "*/3 * * * *"
+
+jobs:
+  invoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Crawl News
+        run: curl -X GET "https://buskerlabel.com/crawl"
