@@ -278,8 +278,8 @@ async def crawl(already_crawled_urls: set[str]):
         # Initialize and run the crawler for the source
         crawler = await init_crawler(
             request_queue = rq,              
-            max_requests_per_crawl = 64, 
-            max_days_old = 120,
+            max_requests_per_crawl = 32, 
+            max_days_old = 7,
             store = store,
             already_crawled_urls = already_crawled_urls
         )
