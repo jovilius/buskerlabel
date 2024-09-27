@@ -23,7 +23,11 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/")
 def read_root(request: Request, db: Session = Depends(get_db)):
+    import time
+    start = time.time()
     stories = repo.find_shortlisted_stories(db)
+    end = time.time()
+    print(f"Stories loaded in {end-start} seconds.")
     return templates.TemplateResponse(
         "index.html", 
         {"request": request, "stories": stories}
